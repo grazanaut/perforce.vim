@@ -13,6 +13,13 @@
 " Configuration Management System'.  See http://www.perforce.com
 " ---------------------------------------------------------------------------
 
+" ---------------------------------------------------------------------------
+" Options
+" ---------------------------------------------------------------------------
+" use gui dialog for prompts? (1 = yes, 0 = no)
+let g:perforce_use_gui_prompts=0
+
+
 " Standard code to avoid loading twice and to allow not loading
 if exists("loaded_perforce")
    finish
@@ -102,12 +109,40 @@ if( strlen( &rulerformat ) == 0 ) && ( p4SetRuler == 1 )
   set rulerformat=%60(%=%{P4RulerStatus()}\ %4l,%-3c\ %3p%%%)
 endif
 
-"Basic check for p4-enablement
+"Basic check for p4-enablement p4.exe (win), p4 (*nix)
 if executable( "p4.exe" ) || executable( "p4" )
     let s:PerforceExecutable="p4" 
 else
     augroup! perforce
 endif 
+
+"----------------------------------------------------------------------------
+" Give the user the option of using dialogs (gui) or prompts (textmode)
+"----------------------------------------------------------------------------
+function s:P4ConfirmSomething( sMessage, iDefault )
+    " 1 = yes, 2 = no
+    let l:action = a:iDefault
+    if ( ( g:perforce_use_gui_prompts == 1 ) && has("gui_running") )
+        let l:action=confirm( a:sMessage, "&Yes\n&No", a:iDefault, "Question")
+    else
+      if ( a:iDefault == 1 )
+        let l:sYNOpts = " (Y/n) "
+      else
+        let l:sYNOpts = " (N/y) "
+      endif
+      let l:answer=input( a:sMessage . l:sYNOpts )
+      if ( ( l:answer == "Y" ) || ( l:answer == "y" ) )
+        let l:action = 1
+      else
+        if ( ( l:answer == "N" ) || ( l:answer == "n" ) )
+          let l:action = 2
+        else
+          let l:action = a:iDefault
+        end
+      endif
+    endif
+    return l:action
+endfunction
 
 "----------------------------------------------------------------------------
 " Minimal execution of a p4 command, followed by re-opening
@@ -309,7 +344,7 @@ endfunction
 " is altered for the first time
 "----------------------------------------------------------------------------
 function s:P4OpenFileForEditWithPrompt()
-    let action=confirm("File is read only.  p4 Edit the file?" ,"&Yes\n&No", 1, "Question")
+    let action = s:P4ConfirmSomething( "File is read only.  p4 Edit the file?", 1 )
     if action == 1
          call s:P4OpenFileForEdit()
     endif
