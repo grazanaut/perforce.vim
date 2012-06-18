@@ -144,6 +144,18 @@ function s:P4ConfirmSomething( sMessage, iDefault )
     return l:action
 endfunction
 
+function s:P4InputSomething( sMessage, sDefault )
+    if ( ( g:perforce_use_gui_prompts == 1 ) && has("gui_running") )
+      let l:answer = inputdialog( a:sMessage, a:sDefault )
+    else
+      let l:answer = input( a:sMessage . "(Default: \"" . a:sDefault . "\") : ")
+      if ( l:answer == "" )
+        let l:answer = a:sDefault
+      endif
+    endif
+    return l:answer
+endfunction
+
 "----------------------------------------------------------------------------
 " Minimal execution of a p4 command, followed by re-opening
 " of the file so that status changes are recognised. This is
@@ -622,7 +634,7 @@ endfunction
 " Get a changelist
 "----------------------------------------------------------------------------
 function s:P4GetChangelist(sPrompt, sDefault)
-    let listnum = inputdialog( a:sPrompt, a:sDefault)
+    let listnum = s:P4InputSomething( a:sPrompt, a:sDefault)
     if listnum != ""
         let b:changelist = listnum
     endif
