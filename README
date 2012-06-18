@@ -1,3 +1,15 @@
+This is a fork of vim-scripts/perforce.vim
+Forked to
+- add mac/linux support (was previously win only)
+- fix a few annoyances, including
+  - prompts
+  - keymappings
+
+
+
+
+Original Readme below:
+
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=167
 
 Perforce is a source control system from http://www.perforce.com
